@@ -2,6 +2,8 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from app.agent import run_agent
 
 from app.config import settings
 
@@ -41,3 +43,16 @@ def say_hello(name: str):
            detail="Name must be at least 2 characters long."
         )
     return {"message": f"Hello, {name}!"}
+
+class ChatRequest(BaseModel):
+    message: str
+
+@app.post("/chat")
+def chat(request: ChatRequest):
+    logger.info(f"Received chat message: {request.message}")
+    try:
+        response = run_agent(request.message)
+        return {"response": response}
+    except Exception as e:
+        logger.error(f"Error occurred while processing chat message: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
