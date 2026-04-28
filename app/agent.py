@@ -1,7 +1,9 @@
 import json
-import logging  
+import logging
 import litellm
 from app.config import settings
+from app.tools.calculator import calculate
+from app.tools.countries import get_country_info
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +60,10 @@ def run_agent(user_message: str) -> str:
             messages=messages,
             tools=TOOLS,
             tool_choice="auto",
+            parallel_tool_calls=False,
             api_key=settings.groq_api_key,
         )
+
         message = response.choices[0].message
 
         if message.tool_calls:
@@ -69,16 +73,15 @@ def run_agent(user_message: str) -> str:
                 tool_name = tool_call.function.name
                 tool_args = json.loads(tool_call.function.arguments)
 
-                logger.info(f"Tool call: {tool_name} | args: {tool_args}")
+                logger.info(f"Tool called: {tool_name} | args: {tool_args}")
 
                 tool_fn = TOOL_MAP.get(tool_name)
                 if tool_fn:
                     result = tool_fn(**tool_args)
                 else:
-                    result = f" Tool '{tool_name}' not found."
+                    result = f"Tool '{tool_name}' not found."
 
                 messages.append({
-
                     "role": "tool",
                     "tool_call_id": tool_call.id,
                     "content": result,
