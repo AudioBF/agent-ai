@@ -4,33 +4,21 @@ import os
 
 API_URL = os.getenv("API_URL", "http://localhost:8000/chat")
 
-st.set_page_config(
-    page_title="Agent AI",
-    page_icon="🤖",
-    layout="centered",
-)
+st.set_page_config(page_title="ChatABF", page_icon="🤖", layout="centered")
+st.title("🤖 ChatABF")
+st.caption("Powered by Groq + LLaMA 3.3, created by ABF")
 
-st.title("🤖 Agent AI")
-st.caption("Powered by Groq + LLaMA 3.3")
-
-# Initialize chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Render existing messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
 if prompt := st.chat_input("Ask me anything..."):
-
-    # Add user message to history and render it
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-
-    # Call the backend
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             try:
@@ -43,8 +31,5 @@ if prompt := st.chat_input("Ask me anything..."):
                 answer = "⚠️ The request timed out. Please try again."
             except Exception:
                 answer = "⚠️ An unexpected error occurred."
-
         st.markdown(answer)
-
-    # Add assistant response to history
     st.session_state.messages.append({"role": "assistant", "content": answer})
