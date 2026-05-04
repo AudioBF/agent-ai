@@ -1,7 +1,8 @@
 import requests
 import streamlit as st
+import os
 
-API_URL = "http://localhost:8000/chat"
+API_URL = os.getenv("API_URL", "http://localhost:8000/chat")
 
 st.set_page_config(
     page_title="Agent AI",
